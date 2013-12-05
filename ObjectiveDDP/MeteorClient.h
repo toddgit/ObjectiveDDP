@@ -23,6 +23,7 @@
 - (void)removeSubscription:(NSString *)subscriptionName;
 - (void)resetCollections;
 - (void)logonWithUsername:(NSString *)username password:(NSString *)password;
+- (void)logonWithUsername:(NSString *)username password:(NSString *)password usernameField:(NSString *)usernameField;
 - (void)logout;
 
 @end

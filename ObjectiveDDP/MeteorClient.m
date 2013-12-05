@@ -80,11 +80,15 @@
 static BOOL userIsLoggingIn = NO;
 
 - (void)logonWithUsername:(NSString *)username password:(NSString *)password {
+	[self logonWithUsername:username password:password usernameField:@"email"];
+}
+
+- (void)logonWithUsername:(NSString *)username password:(NSString *)password usernameField:(NSString *)usernameField {
     if (userIsLoggingIn) {
         return;
     }
     NSArray *params = @[@{@"A": [self generateAuthVerificationKeyWithUsername:username password:password],
-                          @"user": @{@"email":username}}];
+                          @"user": @{usernameField:username}}];
     userIsLoggingIn = YES;
     [self sendWithMethodName:@"beginPasswordExchange" parameters:params];
 }
