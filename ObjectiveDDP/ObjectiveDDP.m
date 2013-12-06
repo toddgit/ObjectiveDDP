@@ -23,6 +23,14 @@
     [self.webSocket open];
 }
 
+// disconnect from the websocket
+- (void)disconnectWebSocket {
+    if(self.webSocket){
+        [self.webSocket close];
+        self.webSocket = nil;
+    }
+}
+
 //connect (client -> server)
 //  session: string (if trying to connectWebSocket to an existing DDP session)
 //  version: string (the proposed protocol version)
@@ -96,7 +104,9 @@
 }
 
 - (void)_closeConnection {
-    [self.webSocket close];
+    if(self.webSocket){
+        [self.webSocket close];
+    }
     [self _setupWebSocket];
 }
 

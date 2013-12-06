@@ -14,6 +14,8 @@
 
 - (void)connectWebSocket;
 
+- (void)disconnectWebSocket;
+
 - (void)connectWithSession:(NSString *)session
                    version:(NSString *)version
                    support:(NSString *)support;
