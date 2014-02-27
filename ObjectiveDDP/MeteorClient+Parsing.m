@@ -45,8 +45,7 @@ static int LOGON_RETRY_MAX = 5;
     if([msg isEqualToString:@"result"]
        && message[@"error"]
        && [message[@"error"][@"error"] integerValue] == 403
-       && self.authState != AuthStateLoggedOut
-       && self.authState != AuthStateNoAuth) {
+       && self.authState == AuthStateLoggingIn) {
         [self _setAuthStatetoLoggedOut];
         if (++_retryAttempts < LOGON_RETRY_MAX && self.connected) {
             [self logonWithUserParameters:_logonParams username:_userName password:_password responseCallback:_logonMethodCallback];
@@ -159,12 +158,12 @@ static int LOGON_RETRY_MAX = 5;
     srp_user_process_meteor_challenge(_srpUser, password_str, salt, identity, B, &Mstr);
     NSString *M_final = [NSString stringWithCString:Mstr encoding:NSASCIIStringEncoding];
     NSArray *params = @[@{@"srp":@{@"M":M_final}}];
-    [self sendWithMethodName:@"login" parameters:params];
+    [self callMethodName:@"login" parameters:params responseCallback:nil];
 }
 
 - (void)didReceiveHAMKVerificationWithResponse:(NSDictionary *)response {
     srp_user_verify_meteor_session(_srpUser, [response[@"HAMK"] cStringUsingEncoding:NSASCIIStringEncoding]);
-    if (srp_user_is_authenticated) {
+    if (srp_user_is_authenticated(_srpUser)) {
         _sessionToken = response[@"token"];
         self.userId = response[@"id"];
         [self.authDelegate authenticationWasSuccessful];

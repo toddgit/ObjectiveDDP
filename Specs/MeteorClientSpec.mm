@@ -28,6 +28,40 @@ describe(@"MeteorClient", ^{
         meteorClient.authState should equal(AuthStateNoAuth);
     });
     
+    describe(@"#disconnect", ^{
+        beforeEach(^{
+            [meteorClient disconnect];
+        });
+        
+        it(@"tells ddp to disconnect", ^{
+            ddp should have_received(@selector(disconnectWebSocket));
+        });        
+    });
+    
+    describe(@"#logonWithUserParameters:username:password", ^{
+        context(@"when connected", ^{
+            beforeEach(^{
+                meteorClient.connected = YES;
+                [meteorClient logonWithUserParameters:@{@"user": @"mrt"} username:@"mrt@ateam.com" password:@"fool" responseCallback:nil];
+            });
+            
+            it(@"sends logon message correctly", ^{
+                NSArray *sentMessages = [(id<CedarDouble>)ddp sent_messages];
+                NSInvocation *invocation = sentMessages[1];
+                NSArray *sentParameters;
+                [invocation getArgument:&sentParameters atIndex:4];
+                
+                ddp should have_received(@selector(methodWithId:method:parameters:))
+                .with(anything)
+                .and_with(@"beginPasswordExchange")
+                .and_with(anything);
+                NSDictionary *parameterDictionary = sentParameters[0];
+                [parameterDictionary allKeys] should contain(@"user");
+                parameterDictionary[@"user"] should equal(@"mrt");
+            });
+        });
+    });
+    
     describe(@"#logonWithUsername:password:responseCallback:", ^{
         __block NSDictionary *successResponse = nil;
         __block NSError *errorResponse = nil;
@@ -299,13 +333,29 @@ describe(@"MeteorClient", ^{
         beforeEach(^{
             meteorClient.websocketReady = YES;
             meteorClient.connected = YES;
-            [meteorClient didReceiveConnectionClose];
         });
-
-        it(@"resets collections and reconnects web socket", ^{
-            meteorClient.websocketReady should_not be_truthy;
-            meteorClient.connected should_not be_truthy;
-            ddp should have_received(@selector(connectWebSocket));
+        
+        context(@"when websocket is not disconnecting", ^{
+            beforeEach(^{
+                [meteorClient didReceiveConnectionClose];
+            });
+            
+            it(@"resets collections and reconnects web socket", ^{
+                meteorClient.websocketReady should_not be_truthy;
+                meteorClient.connected should_not be_truthy;
+                ddp should have_received(@selector(connectWebSocket));
+            });
+        });
+        
+        context(@"when websocket is disconnecting", ^{
+            beforeEach(^{
+                [meteorClient disconnect];
+                [meteorClient didReceiveConnectionClose];
+            });
+            
+            it(@"does not attempt to reconnect", ^{
+                ddp should_not have_received(@selector(connectWebSocket));
+            });
         });
     });
     
@@ -321,26 +371,42 @@ describe(@"MeteorClient", ^{
             }];
             meteorClient->_methodIds.count should equal(1);
             meteorClient->_responseCallbacks.count should equal(1);
-            [meteorClient didReceiveConnectionError:nil];
         });
         
-        it(@"resets collections and reconnects web socket", ^{
-            meteorClient.websocketReady should_not be_truthy;
-            meteorClient.connected should_not be_truthy;
-            meteorClient->_methodIds.count should equal(0);
-            meteorClient->_responseCallbacks.count should equal(0);
-            ddp should have_received(@selector(connectWebSocket));
+        context(@"when websocket is not disconnecting", ^{
+            beforeEach(^{
+                [meteorClient didReceiveConnectionError:nil];
+            });
+            
+            it(@"resets collections and reconnects web socket", ^{
+                meteorClient.websocketReady should_not be_truthy;
+                meteorClient.connected should_not be_truthy;
+                meteorClient->_methodIds.count should equal(0);
+                meteorClient->_responseCallbacks.count should equal(0);
+                ddp should have_received(@selector(connectWebSocket));
+            });
+            
+            it(@"rejects unresolved callbacks", ^{
+                NSError *expectedError = [NSError errorWithDomain:MeteorClientTransportErrorDomain code:MeteorClientErrorDisconnectedBeforeCallbackComplete userInfo:@{NSLocalizedDescriptionKey: @"You were disconnected"}];
+                rejectError should equal(expectedError);
+            });
+            
+            it(@"sends a notification", ^{
+                [NSNotificationCenter defaultCenter] should have_received(@selector(postNotificationName:object:))
+                .with(MeteorClientDidDisconnectNotification)
+                .and_with(meteorClient);
+            });
         });
         
-        it(@"rejects unresolved callbacks", ^{
-            NSError *expectedError = [NSError errorWithDomain:MeteorClientTransportErrorDomain code:MeteorClientErrorDisconnectedBeforeCallbackComplete userInfo:@{NSLocalizedDescriptionKey: @"You were disconnected"}];
-            rejectError should equal(expectedError);
-        });
-
-        it(@"sends a notification", ^{
-            [NSNotificationCenter defaultCenter] should have_received(@selector(postNotificationName:object:))
-            .with(MeteorClientDidDisconnectNotification)
-            .and_with(meteorClient);
+        context(@"when the websocket is disconnecting", ^{
+            beforeEach(^{
+                [meteorClient disconnect];
+                [meteorClient didReceiveConnectionError:nil];
+            });
+            
+            it(@"does not attempt to reconnect", ^{
+                ddp should_not have_received(@selector(connectWebSocket));
+            });
         });
     });
 
@@ -437,14 +503,16 @@ describe(@"MeteorClient", ^{
             __block NSDictionary *authErrorMessage;
             
             beforeEach(^{
-                authErrorMessage = @{
-                                     @"msg": @"result",
+                // assume we are in loggin in state since
+                // auth error (login reject) only occurs then
+                meteorClient.authState = AuthStateLoggingIn;
+                
+                authErrorMessage = @{@"msg": @"result",
                                      @"error": @{@"error": @403,
-                                                 @"reason":
-                                                 @"are you kidding me?"}};
+                                                 @"reason": @"are you kidding me?"}};
             });
             
-            context(@"before max rejects occurs and connected", ^{
+            context(@"before max rejects occurs", ^{
                 beforeEach(^{
                     meteorClient->_retryAttempts = 0;
                     meteorClient->_userName = @"mknightsham";
