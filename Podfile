@@ -1,3 +1,7 @@
-platform :ios, '6.0'
+platform :ios, '7.0'
 
-pod 'SocketRocket', :git => 'git@github.com:square/SocketRocket.git'
+target :Specs do
+  pod 'SocketRocket', :git => 'https://github.com/square/SocketRocket.git'
+  pod 'RBHive', :git => 'https://github.com/boundsj/RBHive.git'
+  pod 'Cedar', '~> 0.9.5'
+end

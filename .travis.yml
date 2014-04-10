@@ -1,2 +1,12 @@
- language: objective-c
- script: rake
+language: objective-c
+
+rvm:
+  - 1.9.3
+
+install:
+  - gem install cocoapods -v 0.29.0
+  - brew install ios-sim
+  - gem install thrust
+  - pod install
+
+script: rake specs
