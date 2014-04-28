@@ -881,10 +881,7 @@ void meteor_user_generate_HAMK(SRPUser *usr,
     
     unsigned char lbuff[SHA256_DIGEST_LENGTH] = "";
     hash(usr->hash_alg, (const unsigned char *)AMS, strlen(AMS), lbuff);
-    char *HAMK_temp = convert_to_lower(BN_bn2hex(BN_bin2bn(lbuff, hash_length(usr->hash_alg), NULL)));
-    int HAMK_len = strlen(HAMK_temp) + 1;
-    usr->HAMK = (const char *)  malloc(HAMK_len);
-    memcpy((char *)usr->HAMK, HAMK_temp, HAMK_len);
+    usr->HAMK = convert_to_lower(BN_bn2hex(BN_bin2bn(lbuff, hash_length(usr->hash_alg), NULL)));
     
     free(AMS);
 }
