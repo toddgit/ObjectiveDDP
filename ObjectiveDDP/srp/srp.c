@@ -922,10 +922,6 @@ void srp_user_process_meteor_challenge(SRPUser *usr,
 
 void srp_user_verify_meteor_session( SRPUser * usr, const char * HAMK_meteor )
 {
-    if (usr->HAMK == NULL) {
-        usr->authenticated = 1;
-        return;
-    }
     usr->authenticated = strcmp(usr->HAMK, HAMK_meteor) ? 0 : 1;
 }
 
