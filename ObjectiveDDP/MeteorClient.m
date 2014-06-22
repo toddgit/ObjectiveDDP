@@ -201,6 +201,13 @@ static NSString *randomId(int length) {
     [self _handleRemovedMessage:message msg:msg];
     [self _handleChangedMessage:message msg:msg];
     
+    if (msg && [msg isEqualToString:@"failed"]) {
+        NSString *version = [message objectForKey:@"version"];
+        if (version) {
+            self.ddpVersion = version;
+        }
+    }
+    
     if (msg && [msg isEqualToString:@"connected"]) {
         self.connected = YES;
         [[NSNotificationCenter defaultCenter] postNotificationName:@"connected" object:nil];
