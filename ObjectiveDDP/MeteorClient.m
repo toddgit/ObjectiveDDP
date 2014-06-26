@@ -161,7 +161,7 @@ static NSString *randomId(int length) {
     }
     
     if (!userParameters) {
-        userParameters = @{@"user": @{@"email": username}};
+        userParameters = @{@"user": @{@"username": username}};
     }
    
     NSMutableDictionary *mutableUserParameters = [userParameters mutableCopy];
