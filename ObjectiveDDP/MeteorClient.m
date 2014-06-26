@@ -330,6 +330,7 @@ static NSString *randomId(int length) {
 
 - (void)_setAuthStatetoLoggedOut {
     _logonParams = nil;
+    _sessionToken = nil;
     self.authState = AuthStateNoAuth;
 }
 
