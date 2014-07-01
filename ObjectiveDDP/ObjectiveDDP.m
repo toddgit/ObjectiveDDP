@@ -65,6 +65,24 @@
     [self.webSocket send:json];
 }
 
+//ping (client -> server):
+- (void)ping {
+    NSDictionary *fields = @{@"msg" : @"ping"};
+    NSString *json = [self _buildJSONWithFields:fields parameters:nil];
+    [self.webSocket send:json];
+}
+
+//pong (client -> server):
+//  id: string (the id send with the ping)
+- (void)pong:(NSString *)id {
+    NSDictionary *fields = @{@"msg": @"pong"};
+    if (id)
+        fields = @{@"msg": @"pong", @"id": id};
+    
+    NSString *json = [self _buildJSONWithFields:fields parameters:nil];
+    [self.webSocket send:json];
+}
+
 #pragma mark - Internal 
 
 - (NSString *)_buildJSONWithFields:(NSDictionary *)fields parameters:(NSArray *)parameters {

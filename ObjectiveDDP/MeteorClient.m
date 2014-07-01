@@ -53,6 +53,13 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
     return [self _send:notify parameters:parameters methodName:methodName];
 }
 
+- (void)ping {
+    if (!([self okToSend] && self.websocketReady)) {
+        return;
+    }
+    [self.ddp ping];
+}
+
 - (NSString *)callMethodName:(NSString *)methodName parameters:(NSArray *)parameters responseCallback:(MeteorClientMethodCallback)responseCallback {
     if ([self _rejectIfNotConnected:responseCallback]) {
         return nil;
@@ -200,6 +207,10 @@ static NSString *randomId(int length) {
     [self _handleAddedMessage:message msg:msg];
     [self _handleRemovedMessage:message msg:msg];
     [self _handleChangedMessage:message msg:msg];
+    
+    if (msg && [msg isEqualToString:@"ping"]) {
+        [self.ddp pong:messageId];
+    }
     
     if (msg && [msg isEqualToString:@"failed"]) {
         NSString *version = [message objectForKey:@"version"];
