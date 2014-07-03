@@ -32,6 +32,11 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
         _retryAttempts = 0;
         _responseCallbacks = [NSMutableDictionary dictionary];
         _ddpVersion = ddpVersion;
+        if ([ddpVersion isEqualToString:@"pre2"]) {
+            _supportedVersions = @[@"pre2", @"pre1"];
+        } else {
+            _supportedVersions = @[@"pre2", @"pre1"];
+        }
     }
     return self;
 }
@@ -248,7 +253,7 @@ static NSString *randomId(int length) {
 - (void)didOpen {
     self.websocketReady = YES;
     [self resetCollections];
-    [self.ddp connectWithSession:nil version:self.ddpVersion support:nil];
+    [self.ddp connectWithSession:nil version:self.ddpVersion support:self.supportedVersions];
     [[NSNotificationCenter defaultCenter] postNotificationName:MeteorClientDidConnectNotification object:self];
 }
 
