@@ -29,10 +29,11 @@ typedef void(^MeteorClientMethodCallback)(NSDictionary *response, NSError *error
 @property (nonatomic, strong) ObjectiveDDP *ddp;
 @property (nonatomic, weak) id<DDPAuthDelegate> authDelegate;
 @property (nonatomic, strong, readonly) NSMutableDictionary *collections;
-@property (nonatomic, copy, readonly) NSString *userId;
+@property (nonatomic, copy) NSString *userId;
+@property (nonatomic, copy) NSString *sessionToken;
 @property (nonatomic, assign, readonly) BOOL websocketReady;
 @property (nonatomic, assign, readonly) BOOL connected;
-@property (nonatomic, assign, readonly) AuthState authState;
+@property (nonatomic, assign) AuthState authState;
 @property (nonatomic, copy, readonly) NSString *ddpVersion;
 
 // In flux; use "pre1" for meteor versions up to v0.8.0.1
