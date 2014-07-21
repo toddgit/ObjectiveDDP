@@ -258,11 +258,11 @@ static NSString *randomId(int length) {
 }
 
 - (void)didReceiveConnectionError:(NSError *)error {
-    [self _handleConnectionError];
+    [self _handleConnectionError:error];
 }
 
 - (void)didReceiveConnectionClose {
-    [self _handleConnectionError];
+    [self _handleConnectionError:nil];
 }
 
 #pragma mark - Internal
@@ -278,11 +278,11 @@ static NSString *randomId(int length) {
     return methodId;
 }
 
-- (void)_handleConnectionError {
+- (void)_handleConnectionError:(NSError *)error {
     self.websocketReady = NO;
     self.connected = NO;
     [self _invalidateUnresolvedMethods];
-    [[NSNotificationCenter defaultCenter] postNotificationName:MeteorClientDidDisconnectNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:MeteorClientDidDisconnectNotification object:error];
     if (_disconnecting) {
         _disconnecting = NO;
         return;
