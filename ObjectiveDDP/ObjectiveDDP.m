@@ -2,7 +2,10 @@
 #import "DependencyProvider.h"
 
 @implementation ObjectiveDDP
-
+- (void)dealloc
+{
+    self.webSocket = nil;
+}
 - (id)initWithURLString:(NSString *)urlString
                delegate:(id <ObjectiveDDPDelegate>)delegate {
     self = [super init];
@@ -102,6 +105,7 @@
 
 - (void)_closeConnection {
     [self.webSocket close];
+    self.webSocket.delegate = nil;
     self.webSocket = nil;
 }
 

@@ -15,7 +15,10 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 @end
 
 @implementation MeteorClient
-
+- (void)dealloc
+{
+    self.ddp = nil;
+}
 - (id)init
 {
     [self doesNotRecognizeSelector:_cmd];
@@ -196,6 +199,7 @@ static NSString *randomId(int length) {
 - (void)disconnect {
     _disconnecting = YES;
     [self.ddp disconnectWebSocket];
+    self.ddp = nil;
 }
 
 #pragma mark <ObjectiveDDPDelegate>
