@@ -200,6 +200,7 @@ static NSString *randomId(int length) {
     _disconnecting = YES;
     [self.ddp disconnectWebSocket];
     self.ddp = nil;
+    self.connected = NO;
 }
 
 #pragma mark <ObjectiveDDPDelegate>
