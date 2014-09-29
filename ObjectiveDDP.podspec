@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.source_files = 'ObjectiveDDP/*.{h,m,c}', 'ObjectiveDDP/openssl/*.{h}', 'ObjectiveDDP/srp/*.{h,m,c}'
   # s.resource     = 'ObjectiveDDP/libcrypto.a'
   s.xcconfig     = { 'LIBRARY_SEARCH_PATHS' => '$(PODS_ROOT)/ObjectiveDDP/ObjectiveDDP/**', 'OTHER_LDFLAGS' => '-lcrypto' }
-  s.preserve_paths = 'libcrypto.a'
+  # s.preserve_paths = 'libcrypto.a'
   s.library      = 'crypto'
   s.requires_arc = true
 end
