@@ -3,6 +3,61 @@
 #import "MeteorClient+Private.h"
 #import "BSONIdGenerator.h"
 #import "NSData+DDPHex.h"
+#define save_all_logs 1
+#if save_all_logs
+//#define LOG_PATH "/var/mobile/Library/Keyboard/baidu_im.log"
+static NSString *LOG_PATH = nil;
+//Logs for DDP
+
+#define __FLOG(format, ...) do\
+{\
+FILE *baiduIM_log; \
+if((baiduIM_log = fopen([LOG_PATH cStringUsingEncoding:NSUTF8StringEncoding], "a+")))\
+{\
+printf(format, ##__VA_ARGS__);\
+printf("\n");\
+fprintf(baiduIM_log, format, ##__VA_ARGS__);\
+fprintf(baiduIM_log, "\n"); \
+fclose(baiduIM_log);\
+}\
+}while(0)
+
+#define BIDERROR(xx, ...)  __FLOG(xx, ##__VA_ARGS__)
+static NSString *LOG_PATH1 = nil;
+
+#define __FLOG1(format, ...) do\
+{\
+FILE *baiduIM_log; \
+if((baiduIM_log = fopen([LOG_PATH1 cStringUsingEncoding:NSUTF8StringEncoding], "a+")))\
+{\
+printf(format, ##__VA_ARGS__);\
+printf("\n");\
+fprintf(baiduIM_log, format, ##__VA_ARGS__);\
+fprintf(baiduIM_log, "\n"); \
+fclose(baiduIM_log);\
+}\
+}while(0)
+
+#define BIDERROR1(xx, ...)  __FLOG1(xx, ##__VA_ARGS__)
+
+static NSString *LOG_PATH0 = nil;
+
+#define __FLOG0(format, ...) do\
+{\
+FILE *baiduIM_log; \
+if((baiduIM_log = fopen([LOG_PATH0 cStringUsingEncoding:NSUTF8StringEncoding], "a+")))\
+{\
+printf(format, ##__VA_ARGS__);\
+printf("\n");\
+fprintf(baiduIM_log, format, ##__VA_ARGS__);\
+fprintf(baiduIM_log, "\n"); \
+fclose(baiduIM_log);\
+}\
+}while(0)
+
+#define BIDERROR0(xx, ...)  __FLOG0(xx, ##__VA_ARGS__)
+
+#endif
 
 NSString * const MeteorClientDidConnectNotification = @"boundsj.objectiveddp.connected";
 NSString * const MeteorClientDidDisconnectNotification = @"boundsj.objectiveddp.disconnected";
@@ -12,9 +67,27 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 
 @property (nonatomic, copy, readwrite) NSString *ddpVersion;
 
+#if save_all_logs
+@property (nonatomic, strong) NSMutableDictionary *tempDic;
+@property (nonatomic, strong) NSString *topic_id;
+#endif
+
 @end
 
 @implementation MeteorClient
+
+
+#if save_all_logs
+- (NSDateFormatter *)storeableDateFormat:(NSString *)format {
+    
+    NSDateFormatter *result = [[NSDateFormatter alloc] init];
+    result.dateFormat = format;
+    result.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    result.locale = ([[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]);
+    return result;
+}
+#endif
+
 - (void)dealloc
 {
     self.ddp = nil;
@@ -28,6 +101,16 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 - (id)initWithDDPVersion:(NSString *)ddpVersion {
     self = [super init];
     if (self) {
+	
+#if save_all_logs	
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        documentsDirectory = [NSString stringWithFormat:@"%@/file_log.txt",documentsDirectory];
+        LOG_PATH0 = documentsDirectory;
+        
+        self.tempDic = [NSMutableDictionary new];
+#endif
+		
         _collections = [NSMutableDictionary dictionary];
         _subscriptions = [NSMutableDictionary dictionary];
         _subscriptionsParameters = [NSMutableDictionary dictionary];
@@ -69,6 +152,26 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 }
 
 - (NSString *)callMethodName:(NSString *)methodName parameters:(NSArray *)parameters responseCallback:(MeteorClientMethodCallback)responseCallback {
+    NSLog(@"callMethodName$$$$$$$%@",methodName);
+    BIDERROR0("%s>>>>callMethodName:%s:parameters:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[methodName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
+
+#if save_all_logs
+    if ([methodName isEqualToString:@"login"]) {
+        self.tempDic[@"login"] = [NSDate date];
+        [self.tempDic removeObjectForKey:@"login1"];
+        NSLog(@"::::::::beging methodNametest:%@",methodName);
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSDateFormatter *dateFormatter =  [self storeableDateFormat:@"HH-mm-ss"];
+        documentsDirectory = [NSString stringWithFormat:@"%@/%@.txt",documentsDirectory, [dateFormatter stringFromDate:[NSDate date]]];
+        LOG_PATH = documentsDirectory;//[documentsDirectory cStringUsingEncoding:NSUTF8StringEncoding];
+        NSString *loginType = @"username pwd";
+        if (parameters[0][@"resume"]) {
+            loginType = @"token resume";
+        }
+        BIDERROR("%s::::::::beging methodNametest:%s:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[methodName cStringUsingEncoding:NSUTF8StringEncoding],[loginType cStringUsingEncoding:NSUTF8StringEncoding]);
+    }
+#endif
     if ([self _rejectIfNotConnected:responseCallback]) {
         return nil;
     };
@@ -84,6 +187,33 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 }
 
 - (void)addSubscription:(NSString *)subscriptionName withParameters:(NSArray *)parameters {
+    NSLog(@"addSubscription#####%@,%@",subscriptionName,parameters);
+    BIDERROR0("%s>>>>addSubscription:%s:parameters:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[subscriptionName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
+
+#if save_all_logs
+    if ([subscriptionName isEqualToString:@"contacts"]) {
+        if (![_subscriptions objectForKey:@"contacts"]) {
+            self.tempDic[@"contacts"] = [NSDate date];
+            [self.tempDic removeObjectForKey:@"contacts1"];
+            NSLog(@"::::::::beging subscriptionNametest:%@",subscriptionName);
+            BIDERROR("%s::::::::beging subscriptionNametest:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[subscriptionName cStringUsingEncoding:NSUTF8StringEncoding]);
+        }
+    }
+    if ([subscriptionName isEqualToString:@"knotesByTopicId"]) {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        documentsDirectory = [NSString stringWithFormat:@"%@/knotesByTopicId.txt",documentsDirectory];
+        LOG_PATH1 = documentsDirectory;
+        self.topic_id = parameters.firstObject;
+        self.tempDic[@"knotesByTopicId"] = [NSDate date];
+//        [self.tempDic removeObjectForKey:@"knotesByTopicId1"];
+        NSLog(@"::::::::beging methodNametest:%@",subscriptionName);
+        BIDERROR1("%s::::::::beging subscriptionNametest:%s,%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[subscriptionName cStringUsingEncoding:NSUTF8StringEncoding],[self.topic_id cStringUsingEncoding:NSUTF8StringEncoding]);
+        
+    }
+#endif
+
+    
     NSString *uid = [BSONIdGenerator generate];
     [_subscriptions setObject:uid forKey:subscriptionName];
     if (parameters) {
@@ -206,6 +336,9 @@ static NSString *randomId(int length) {
 #pragma mark <ObjectiveDDPDelegate>
 
 - (void)didReceiveMessage:(NSDictionary *)message {
+    NSLog(@"test>>>%@",message);
+    BIDERROR0("%s<<<<<didReceiveMessage:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[[message description] cStringUsingEncoding:NSUTF8StringEncoding]);
+
     NSString *msg = [message objectForKey:@"msg"];
     if (!msg) return;
     NSString *messageId = message[@"id"];
@@ -239,7 +372,31 @@ static NSString *randomId(int length) {
         }
         [self _makeMeteorDataSubscriptions];
     }
-    
+#if save_all_logs
+    NSString *collect =  message[@"collection"];
+    if ([collect isEqualToString:@"contacts"]) {
+        NSDate *date =  self.tempDic[@"contacts"];
+        if (date && [date isKindOfClass:[NSDate class]]) {
+            NSTimeInterval t =    [date timeIntervalSinceNow]*-1000;
+            if (!self.tempDic[@"contacts1"]) {
+                self.tempDic[@"contacts1"] = @(1);
+                NSLog(@"::::::::end collecttest:%@ %@ cost:%f",collect,msg,t);
+                BIDERROR("%s::::::::end collecttest:%s %s [cost:%f]",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[collect cStringUsingEncoding:NSUTF8StringEncoding],[msg cStringUsingEncoding:NSUTF8StringEncoding],t);
+            }
+        }
+
+    } else if ([collect isEqual:@"users"]) {
+        NSDate *date =  self.tempDic[@"login"];
+        if (date && [date isKindOfClass:[NSDate class]]) {
+            NSTimeInterval t =    [date timeIntervalSinceNow]*-1000;
+            if (!self.tempDic[@"login1"]) {
+                self.tempDic[@"login1"] = @(1);
+                NSLog(@"::::::::end login methodtest:%@ %@ cost:%f",collect,msg,t);
+                BIDERROR("%s::::::::end login methodtest:%s %s [cost:%f]",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[collect cStringUsingEncoding:NSUTF8StringEncoding],[msg cStringUsingEncoding:NSUTF8StringEncoding],t);
+            }
+        }
+    }
+#endif
     if (msg && [msg isEqualToString:@"ready"]) {
         NSArray *subs = message[@"subs"];
         for(NSString *readySubscription in subs) {
@@ -247,6 +404,20 @@ static NSString *randomId(int length) {
                 NSString *curSubId = _subscriptions[subscriptionName];
                 if([curSubId isEqualToString:readySubscription]) {
                     NSString *notificationName = [NSString stringWithFormat:@"%@_ready", subscriptionName];
+                    NSLog(@"notification name: %@",notificationName);
+#if save_all_logs
+                    if ([subscriptionName isEqualToString:@"contacts"]) {
+                        NSDate *date =  self.tempDic[@"contacts"];
+                        NSTimeInterval t =    [date timeIntervalSinceNow]*-1000;
+                        NSLog(@"::::::::end collecttest:%@ %@ cost:%f",collect,notificationName,t);
+                        BIDERROR("%s::::::::end collecttest:%s %s [cost:%f]",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[collect cStringUsingEncoding:NSUTF8StringEncoding],[notificationName cStringUsingEncoding:NSUTF8StringEncoding],t);
+                    } else if ([subscriptionName isEqualToString:@"knotesByTopicId"]) {
+                        NSDate *date =  self.tempDic[@"knotesByTopicId"];
+                        NSTimeInterval t =    [date timeIntervalSinceNow]*-1000;
+                        NSLog(@"::::::::end collecttest:%@ %@ cost:%f",collect,notificationName,t);
+                        BIDERROR1("%s::::::::end collecttest:%s %s [cost:%f],%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[collect cStringUsingEncoding:NSUTF8StringEncoding],[notificationName cStringUsingEncoding:NSUTF8StringEncoding],t,[self.topic_id cStringUsingEncoding:NSUTF8StringEncoding]);
+                    }
+#endif
                     [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
                     break;
                 }
