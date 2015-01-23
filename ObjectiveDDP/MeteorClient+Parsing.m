@@ -118,8 +118,12 @@ static int LOGON_RETRY_MAX = 5;
         }
         indexOfRemovedObject++;
     }
-    
-    [collection removeObjectAtIndex:indexOfRemovedObject];
+    if (indexOfRemovedObject<collection.count) {
+        [collection removeObjectAtIndex:indexOfRemovedObject];
+    }
+    else {
+        NSLog(@"Error,in meteor:indexOfRemovedObject out of bound");
+    }
 }
 
 - (void)_handleChangedMessage:(NSDictionary *)message msg:(NSString *)msg {
