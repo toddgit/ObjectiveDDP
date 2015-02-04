@@ -70,6 +70,7 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 #if save_all_logs
 @property (nonatomic, strong) NSMutableDictionary *tempDic;
 @property (nonatomic, strong) NSString *topic_id;
+@property (nonatomic, strong) NSDateFormatter *dateFormatter;
 #endif
 
 @end
@@ -109,6 +110,11 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
         LOG_PATH0 = documentsDirectory;
         
         self.tempDic = [NSMutableDictionary new];
+        self.dateFormatter = [[NSDateFormatter alloc] init];
+        [self.dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        self.dateFormatter.dateFormat =@"yyyy-MM-dd'T'HH:mm:ss.SSS";
+        [self.dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
+        
 #endif
 		
         _collections = [NSMutableDictionary dictionary];
@@ -152,8 +158,8 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 }
 
 - (NSString *)callMethodName:(NSString *)methodName parameters:(NSArray *)parameters responseCallback:(MeteorClientMethodCallback)responseCallback {
-    NSLog(@"callMethodName$$$$$$$%@",methodName);
-    BIDERROR0("%s>>>>callMethodName:%s:parameters:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[methodName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
+    NSLog(@"callMethodName:%@",methodName);
+    BIDERROR0("%s callMethodName:%s:parameters:%s",[[self.dateFormatter stringFromDate:[NSDate date]] cStringUsingEncoding:NSUTF8StringEncoding],[methodName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
 
 #if save_all_logs
     if ([methodName isEqualToString:@"login"]) {
@@ -187,8 +193,8 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 }
 
 - (void)addSubscription:(NSString *)subscriptionName withParameters:(NSArray *)parameters {
-    NSLog(@"addSubscription#####%@,%@",subscriptionName,parameters);
-    BIDERROR0("%s>>>>addSubscription:%s:parameters:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[subscriptionName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
+    NSLog(@"addSubscription:%@,parameters%@",subscriptionName,parameters);
+    BIDERROR0("%s addSubscription:%s,parameters:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[subscriptionName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
 
 #if save_all_logs
     if ([subscriptionName isEqualToString:@"contacts"]) {
@@ -336,8 +342,8 @@ static NSString *randomId(int length) {
 #pragma mark <ObjectiveDDPDelegate>
 
 - (void)didReceiveMessage:(NSDictionary *)message {
-    NSLog(@"test>>>%@",message);
-    BIDERROR0("%s<<<<<didReceiveMessage:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[[message description] cStringUsingEncoding:NSUTF8StringEncoding]);
+    NSLog(@"sdidReceiveMessage:%@",message);
+    BIDERROR0("%s didReceiveMessage:%s",[[self.dateFormatter stringFromDate:[NSDate date]] cStringUsingEncoding:NSUTF8StringEncoding],[[message description] cStringUsingEncoding:NSUTF8StringEncoding]);
 
     NSString *msg = [message objectForKey:@"msg"];
     if (!msg) return;
@@ -429,6 +435,8 @@ static NSString *randomId(int length) {
 - (void)didOpen {
     self.websocketReady = YES;
     [self resetCollections];
+    BIDERROR0("%s connectWithSession:ddpVersion:%s,supportedVersions:%s",[[self.dateFormatter stringFromDate:[NSDate date]] cStringUsingEncoding:NSUTF8StringEncoding],[[self.ddpVersion description] cStringUsingEncoding:NSUTF8StringEncoding],[[self.supportedVersions description] cStringUsingEncoding:NSUTF8StringEncoding]);
+
     [self.ddp connectWithSession:nil version:self.ddpVersion support:self.supportedVersions];
     [[NSNotificationCenter defaultCenter] postNotificationName:MeteorClientDidConnectNotification object:self];
 }
