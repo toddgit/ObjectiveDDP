@@ -194,7 +194,7 @@ NSString * const MeteorClientTransportErrorDomain = @"boundsj.objectiveddp.trans
 
 - (void)addSubscription:(NSString *)subscriptionName withParameters:(NSArray *)parameters {
     NSLog(@"addSubscription:%@,parameters%@",subscriptionName,parameters);
-    BIDERROR0("%s addSubscription:%s,parameters:%s",[[[NSDate date] description] cStringUsingEncoding:NSUTF8StringEncoding],[subscriptionName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
+    BIDERROR0("%s addSubscription:%s,parameters:%s",[[self.dateFormatter stringFromDate:[NSDate date]] cStringUsingEncoding:NSUTF8StringEncoding],[subscriptionName cStringUsingEncoding:NSUTF8StringEncoding],[[parameters description] cStringUsingEncoding:NSUTF8StringEncoding]);
 
 #if save_all_logs
     if ([subscriptionName isEqualToString:@"contacts"]) {
